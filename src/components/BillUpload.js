@@ -58,7 +58,7 @@ const BillUpload = ({ onBillUploaded, userId }) => {
                   },
                 },
                 {
-                  text: 'Extract the following details from this receipt image: category (e.g., Groceries), date, and total amount. For total, remove any currency symbols and return it as a numeric value only. Return ONLY a raw JSON object with keys: category (string), date (string), and total (number).',
+                  text: 'Extract the following details from this receipt image or PDF: category (e.g., Groceries), date, and total amount. For total, remove any currency symbols and return it as a numeric value only. Return ONLY a raw JSON object with keys: category (string), date (string), and total (number).',
                 },
               ],
             },
@@ -131,9 +131,9 @@ const BillUpload = ({ onBillUploaded, userId }) => {
       return;
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
     if (!selectedFile.type || !allowedTypes.includes(selectedFile.type)) {
-      setError('Please upload a JPEG or PNG image.');
+      setError('Please upload a JPEG, PNG, or PDF file.');
       return;
     }
 
@@ -143,7 +143,7 @@ const BillUpload = ({ onBillUploaded, userId }) => {
     }
 
     setFile(selectedFile);
-    setPreviewUrl(URL.createObjectURL(selectedFile));
+    setPreviewUrl(selectedFile.type.startsWith('image/') ? URL.createObjectURL(selectedFile) : null);
   }
 
   async function handleProcessBill() {
@@ -171,7 +171,6 @@ const BillUpload = ({ onBillUploaded, userId }) => {
     }
 
     if (!userId) {
-      console.log('userId is:', userId);
       setError('User ID not provided. Please ensure you are logged in.');
       return;
     }
@@ -199,10 +198,7 @@ const BillUpload = ({ onBillUploaded, userId }) => {
         .insert([billRecord])
         .select();
 
-      console.log('Supabase Insert Response:', { data, error });
-
       if (error) {
-        console.error('Supabase Insert Error:', error);
         throw new Error(`Supabase error: ${error.message || 'Unknown error'}`);
       }
 
@@ -210,9 +206,9 @@ const BillUpload = ({ onBillUploaded, userId }) => {
         throw new Error('Supabase insert failed: No data returned');
       }
 
-      console.log('Inserted bill:', data[0]);
+      const insertedBill = data[0];
       if (onBillUploaded) {
-        onBillUploaded(data[0]);
+        onBillUploaded(insertedBill);
       }
 
       setError(null);
@@ -221,7 +217,6 @@ const BillUpload = ({ onBillUploaded, userId }) => {
       setPreviewUrl(null);
       alert('Bill successfully uploaded to dashboard!');
     } catch (error) {
-      console.error('Upload error:', error);
       setError(error.message || 'Failed to upload bill to dashboard. Please try again.');
     } finally {
       setIsUploading(false);
@@ -233,19 +228,21 @@ const BillUpload = ({ onBillUploaded, userId }) => {
       <h2>Upload Receipt</h2>
       <input
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,application/pdf"
         onChange={handleFileChange}
         style={{ marginBottom: '10px' }}
       />
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {previewUrl && (
+      {file && (
         <div>
           <h3>Image Preview</h3>
-          <img
-            src={previewUrl}
-            alt="Receipt Preview"
-            style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
-          />
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Receipt Preview"
+              style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+            />
+          )}
           <button
             onClick={handleProcessBill}
             disabled={isProcessing}

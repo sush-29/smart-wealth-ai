@@ -17,19 +17,9 @@ export default function Visualizations() {
     spendingByCategory: null,
     transactionHistory: null,
   });
-  const [categoryColors] = useState({
-    Food: { background: "rgba(255, 99, 132, 0.5)", border: "rgba(255, 99, 132, 1)" },
-    Grocery: { background: "rgba(54, 162, 235, 0.5)", border: "rgba(54, 162, 235, 1)" },
-    Transport: { background: "rgba(75, 192, 192, 0.5)", border: "rgba(75, 192, 192, 1)" },
-    Gas: { background: "rgba(255, 206, 86, 0.5)", border: "rgba(255, 206, 86, 1)" },
-    Shopping: { background: "rgba(153, 102, 255, 0.5)", border: "rgba(153, 102, 255, 1)" },
-    Entertainment: { background: "rgba(255, 159, 64, 0.5)", border: "rgba(255, 159, 64, 1)" },
-    Bills: { background: "rgba(199, 199, 199, 0.5)", border: "rgba(199, 199, 199, 1)" },
-    Other: { background: "rgba(128, 128, 128, 0.5)", border: "rgba(128, 128, 128, 1)" },
-  });
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`; // "2025-05"
   });
   const [showComparison, setShowComparison] = useState(false);
 
@@ -84,9 +74,9 @@ export default function Visualizations() {
   };
 
   const prepareBudgetVsSpendingData = (prevData) => {
-    const labels = showComparison ? ["Current Month", "Previous Month"] : ["Total"];
-    const budgetData = showComparison ? [totalBudget, totalBudget] : [totalBudget];
-    const spentData = showComparison ? [totalSpent, prevTotalSpent] : [totalSpent];
+    const labels = showComparison ? ["Current Month", "Previous Month"] : ["Monthly Budget", "Current Amount"];
+    const budgetData = showComparison ? [totalBudget, totalBudget] : [totalBudget, 0];
+    const spentData = showComparison ? [totalSpent, prevTotalSpent] : [0, totalSpent];
 
     setChartData((prev) => ({
       ...prev,
@@ -94,14 +84,14 @@ export default function Visualizations() {
         labels,
         datasets: [
           {
-            label: "Budget",
+            label: "Monthly Budget",
             data: budgetData,
             backgroundColor: "rgba(54, 162, 235, 0.5)",
             borderColor: "rgba(54, 162, 235, 1)",
             borderWidth: 1,
           },
           {
-            label: "Spent",
+            label: "Current Amount",
             data: spentData,
             backgroundColor: "rgba(255, 99, 132, 0.5)",
             borderColor: "rgba(255, 99, 132, 1)",
@@ -144,10 +134,14 @@ export default function Visualizations() {
     const currentSpentAmounts = allCategories.map((cat) => categorySpending[cat]?.amount || 0);
     const prevSpentAmounts = allCategories.map((cat) => prevCategorySpending[cat]?.amount || 0);
 
-    const backgroundColors = allCategories.map((cat) => {
-      const category = categorySpending[cat]?.display || prevCategorySpending[cat]?.display;
-      return categoryColors[category]?.background || categoryColors.Other.background;
-    });
+    const getRandomColor = () => {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      return `rgba(${r}, ${g}, ${b}, 0.5)`;
+    };
+    const backgroundColors = allCategories.map(() => getRandomColor());
+    const borderColors = backgroundColors.map(color => color.replace("0.5", "1"));
 
     const datasets = showComparison
       ? [
@@ -155,14 +149,14 @@ export default function Visualizations() {
             label: "Current Month",
             data: currentSpentAmounts,
             backgroundColor: backgroundColors,
-            borderColor: backgroundColors.map(color => color.replace("0.5", "1")),
+            borderColor: borderColors,
             borderWidth: 1,
           },
           {
             label: "Previous Month",
             data: prevSpentAmounts,
             backgroundColor: backgroundColors.map(color => color.replace("0.5", "0.3")),
-            borderColor: backgroundColors.map(color => color.replace("0.5", "0.8")),
+            borderColor: borderColors.map(color => color.replace("0.5", "0.8")),
             borderWidth: 1,
           },
         ]
@@ -170,7 +164,7 @@ export default function Visualizations() {
           {
             data: currentSpentAmounts,
             backgroundColor: backgroundColors,
-            borderColor: backgroundColors.map(color => color.replace("0.5", "1")),
+            borderColor: borderColors,
             borderWidth: 1,
           },
         ];
@@ -225,12 +219,15 @@ export default function Visualizations() {
       .from("user_settings")
       .select("monthly_budget")
       .eq("user_id", user.id)
+      .eq("month", selectedMonth) // Fetch for the specific month
       .single();
 
     if (error) {
       console.error("Error fetching user settings:", error.message);
+      setTotalBudget(0); // Default to 0 if no budget is found
     } else {
       setTotalBudget(data?.monthly_budget || 0);
+      console.log(`Fetched budget for ${selectedMonth}: ${data?.monthly_budget || 0}`);
     }
   }
 
@@ -256,6 +253,7 @@ export default function Visualizations() {
       console.error("Error fetching transactions:", error.message);
     } else {
       setTransactions(data || []);
+      console.log(`Fetched transactions for ${selectedMonth}:`, data);
     }
   }
 
@@ -281,6 +279,7 @@ export default function Visualizations() {
       console.error("Error fetching bills:", error.message);
     } else {
       setBills(data || []);
+      console.log(`Fetched bills for ${selectedMonth}:`, data);
     }
   }
 
@@ -340,6 +339,7 @@ export default function Visualizations() {
       total += item.amount || item.total || 0;
     });
     setTotalSpent(total);
+    console.log(`Total spent for ${selectedMonth}: ${total}`);
 
     let prevTotal = 0;
     prevData.forEach((item) => {
@@ -386,6 +386,21 @@ export default function Visualizations() {
                           beginAtZero: true,
                           title: { display: true, text: "Amount ($)" },
                         },
+                        x: {
+                          title: { display: true, text: "Category" },
+                        },
+                      },
+                      plugins: {
+                        legend: { position: "top" },
+                        tooltip: {
+                          callbacks: {
+                            label: (context) => {
+                              const label = context.dataset.label || '';
+                              const value = context.raw || 0;
+                              return `${label}: $${value.toFixed(2)}`;
+                            },
+                          },
+                        },
                       },
                     }}
                   />
@@ -407,6 +422,9 @@ export default function Visualizations() {
                         scales: {
                           y: { beginAtZero: true, title: { display: true, text: "Amount ($)" } },
                           x: { title: { display: true, text: "Category" } },
+                        },
+                        plugins: {
+                          legend: { position: "bottom" },
                         },
                       }}
                     />

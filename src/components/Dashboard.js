@@ -56,7 +56,6 @@ export default function Dashboard() {
 
       await fetchUserSettings();
 
-      // Fetch transactions and bills together
       const [year, month] = selectedMonth.split("-");
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0);
@@ -109,24 +108,16 @@ export default function Dashboard() {
         { event: "INSERT", schema: "public", table: "bills", filter: `user_id=eq.${userId}` },
         (payload) => {
           console.log("New bill received via subscription:", payload.new);
-          const newBillDate = new Date(payload.new.date || payload.new.created_at);
-          const [year, month] = selectedMonth.split("-");
-          if (
-            newBillDate.getFullYear() === parseInt(year) &&
-            newBillDate.getMonth() + 1 === parseInt(month)
-          ) {
-            setBills((prev) => {
-              const updatedBills = [...prev, payload.new].sort((a, b) => {
-                const dateA = new Date(a.date || a.created_at || new Date());
-                const dateB = new Date(b.date || b.created_at || new Date());
-                return dateB - dateA;
-              });
-              console.log("Updated bills state:", updatedBills);
-              updateTotalSpent([...transactions, ...updatedBills]);
-              checkBudgetAlerts(payload.new.category);
-              return updatedBills;
+          setBills((prev) => {
+            const updatedBills = [...prev, payload.new].sort((a, b) => {
+              const dateA = new Date(a.date || a.created_at || new Date());
+              const dateB = new Date(b.date || b.created_at || new Date());
+              return dateB - dateA;
             });
-          }
+            updateTotalSpent([...transactions, ...updatedBills]);
+            checkBudgetAlerts(payload.new.category);
+            return updatedBills;
+          });
         }
       )
       .subscribe();
@@ -223,24 +214,16 @@ export default function Dashboard() {
 
   const handleBillUploaded = (newBill) => {
     console.log("Handling new bill in Dashboard:", newBill);
-    const newBillDate = new Date(newBill.date || newBill.created_at);
-    const [year, month] = selectedMonth.split("-");
-    if (
-      newBillDate.getFullYear() === parseInt(year) &&
-      newBillDate.getMonth() + 1 === parseInt(month)
-    ) {
-      setBills((prev) => {
-        const updatedBills = [...prev, newBill].sort((a, b) => {
-          const dateA = new Date(a.date || a.created_at || new Date());
-          const dateB = new Date(b.date || b.created_at || new Date());
-          return dateB - dateA;
-        });
-        console.log("Updated bills after handleBillUploaded:", updatedBills);
-        updateTotalSpent([...transactions, ...updatedBills]);
-        checkBudgetAlerts(newBill.category);
-        return updatedBills;
+    setBills((prev) => {
+      const updatedBills = [...prev, newBill].sort((a, b) => {
+        const dateA = new Date(a.date || a.created_at || new Date());
+        const dateB = new Date(b.date || b.created_at || new Date());
+        return dateB - dateA;
       });
-    }
+      updateTotalSpent([...transactions, ...updatedBills]);
+      checkBudgetAlerts(newBill.category);
+      return updatedBills;
+    });
   };
 
   const updateTotalSpent = (data) => {
