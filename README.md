@@ -2,7 +2,7 @@
 
 This is a smart finance tracking app designed to help users manage their expenses, set monthly budgets, and receive AI-powered alerts and insights.
 
-> 🎓 *Originally conceptualized and co-developed by Sushmita Raj Banothu as part of a collaborative capstone project.*
+> 🎓 *Originally conceptualized and co-developed by me as part of a collaborative capstone project.*
 
 ---
 
