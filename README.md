@@ -34,7 +34,7 @@ git clone https://github.com/YOUR_USERNAME/smart-wealth-ai.git
 cd smart-wealth-ai
 npm install
 npm run dev
----
+
 
 ## 📌 Note
 
