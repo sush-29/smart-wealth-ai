@@ -1,34 +1,39 @@
-# 💸 AI Finance Platform
+🧠 Smart Wealth – AI Finance Platform
+This is a smart finance tracking app designed to help users manage their expenses, set monthly budgets, and receive AI-powered alerts and insights.
 
-This is a smart finance tracking app that helps users manage their expenses, set monthly budgets, and receive AI-powered alerts and insights.
+🎓 Originally conceptualized and co-developed by Sushmita Raj Banothu as part of a collaborative capstone project.
 
----
+🚀 Features
+Add, edit, and delete expenses
 
-## 🚀 Features
+Upload receipts and auto-label them
 
-- Add, edit, and delete expenses
-- Upload receipts and auto-label them
-- Monthly budget setting
-- Email alerts when budget limits are exceeded
-- View expenses by categories and filters (date, type, etc.)
-- User authentication (Supabase)
-- Clean dashboard interface
+Monthly budget setting
 
----
+Email alerts when budget limits are exceeded
 
-## 🛠 Tech Stack
+View expenses by category and filters (date, type, etc.)
 
-- **Frontend**: React (Next.js), Tailwind CSS
-- **Backend**: Supabase (Auth + Database)
-- **Email**: Nodemailer / Supabase functions
-- **AI Features**: receipt scanning, visualizations, Budget management
+User authentication with Supabase
 
----
+Clean and interactive dashboard UI
 
-## 📦 Installation
+🧰 Tech Stack
+Frontend: React (Next.js), Tailwind CSS
 
-```bash
-git clone https://github.com/RichithaGutha/Ai-finance-platform.git
-cd Ai-finance-platform
+Backend: Supabase (Authentication + Realtime Database)
+
+Email Notifications: Nodemailer / Supabase Functions
+
+AI Integrations: Receipt scanning, budget visualization, insights
+
+⚒️ Installation
+bash
+Copy
+Edit
+git clone https://github.com/YOUR_USERNAME/smart-wealth-ai.git
+cd smart-wealth-ai
 npm install
 npm run dev
+📌 Note
+This repo is a forked and personalized version of an academic project. Ownership has been clarified, and updates may include structure, UI improvements, and documentation enhancements.
