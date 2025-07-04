@@ -35,6 +35,7 @@ cd smart-wealth-ai
 npm install
 npm run dev
 
+---
 
 ## 📌 Note
 
