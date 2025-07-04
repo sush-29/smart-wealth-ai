@@ -35,9 +35,5 @@ cd smart-wealth-ai
 npm install
 npm run dev
 
----
 
-## 📌 Note
 
-This repo is a forked and personalized version of an academic project.  
-Ownership has been clarified, and updates may include structure, UI improvements, and documentation enhancements.
